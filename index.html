@@ -25,7 +25,7 @@
       align-items: center;
       justify-content: space-between;
       touch-action: manipulation;
-      overflow-x: hidden;
+      overflow: hidden;
     }
 
     /* Modal / Lobby Setup */
@@ -62,6 +62,45 @@
       font-size: 1rem;
     }
 
+    /* Dice Overlay Animation Modal */
+    #dice-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 90;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    .dice-roll-stage {
+      display: flex;
+      gap: 20px;
+    }
+    .anim-die {
+      width: 64px;
+      height: 64px;
+      background: #fff;
+      color: #111;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 2.2rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+      transform: rotate(0deg);
+      transition: transform 0.1s linear;
+    }
+    .anim-die.rolling {
+      animation: shake 0.15s infinite alternate;
+    }
+    @keyframes shake {
+      0% { transform: rotate(-12deg) scale(0.95); }
+      100% { transform: rotate(12deg) scale(1.05); }
+    }
+
     header, footer {
       width: 100%;
       max-width: 480px;
@@ -82,7 +121,7 @@
     .status-container {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 2px;
     }
     .status {
       font-weight: 600;
@@ -111,10 +150,10 @@
       background: #457b9d;
       color: #fff;
       border: none;
-      padding: 12px 18px;
+      padding: 10px 16px;
       border-radius: 6px;
       font-weight: 600;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       cursor: pointer;
     }
     .btn:disabled {
@@ -122,24 +161,25 @@
       opacity: 0.4;
     }
 
-    /* Responsive Flexible Board Frame */
+    /* Fixed Compact Aspect-Ratio Board Frame */
     .board-container {
       width: 100vw;
-      max-width: 480px;
-      flex: 1;
+      max-width: 420px;
+      height: 52vh;
+      max-height: 480px;
       min-height: 320px;
       background: #2b1d14;
       border: 4px solid #1c130d;
       display: grid;
-      grid-template-rows: 1fr 28px 1fr;
+      grid-template-rows: 1fr 24px 1fr;
       position: relative;
       box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
-      margin: 4px 0;
+      margin: auto 0;
     }
 
     .half-board {
       display: grid;
-      grid-template-columns: repeat(6, 1fr) 20px repeat(6, 1fr);
+      grid-template-columns: repeat(6, 1fr) 18px repeat(6, 1fr);
       height: 100%;
       position: relative;
     }
@@ -176,9 +216,9 @@
       top: 0;
       width: 0;
       height: 0;
-      border-left: 3.5vw solid transparent;
-      border-right: 3.5vw solid transparent;
-      border-top: 24vh solid #3d2b1f;
+      border-left: 3vw solid transparent;
+      border-right: 3vw solid transparent;
+      border-top: 18vh solid #3d2b1f;
       z-index: 1;
     }
     .top-half .point.alt::before { border-top-color: #6b4d38; }
@@ -189,16 +229,16 @@
       bottom: 0;
       width: 0;
       height: 0;
-      border-left: 3.5vw solid transparent;
-      border-right: 3.5vw solid transparent;
-      border-bottom: 24vh solid #3d2b1f;
+      border-left: 3vw solid transparent;
+      border-right: 3vw solid transparent;
+      border-bottom: 18vh solid #3d2b1f;
       z-index: 1;
     }
     .bottom-half .point.alt::before { border-bottom-color: #6b4d38; }
 
-    @media (min-width: 480px) {
-      .top-half .point::before { border-left-width: 18px; border-right-width: 18px; }
-      .bottom-half .point::before { border-left-width: 18px; border-right-width: 18px; }
+    @media (min-width: 420px) {
+      .top-half .point::before { border-left-width: 15px; border-right-width: 15px; border-top-width: 160px; }
+      .bottom-half .point::before { border-left-width: 15px; border-right-width: 15px; border-bottom-width: 160px; }
     }
 
     /* Checkers stack */
@@ -216,10 +256,10 @@
     .bottom-half .checkers-container { justify-content: flex-end; padding-bottom: 2px; }
 
     .checker {
-      width: 26px;
-      height: 26px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
-      margin: -4px 0;
+      margin: -5px 0;
       box-shadow: 0 2px 4px rgba(0,0,0,0.5);
       border: 2px solid #fff;
     }
@@ -230,26 +270,34 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: rgba(230, 57, 70, 0.3);
+      background: rgba(230, 57, 70, 0.35);
       z-index: 3;
       border: 2px solid #e63946;
+    }
+    .point.valid-move::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(46, 196, 182, 0.35);
+      z-index: 3;
+      border: 2px dashed #2ec4b6;
     }
 
     .dice-area {
       display: flex;
-      gap: 8px;
+      gap: 6px;
     }
     .die {
-      width: 30px;
-      height: 30px;
+      width: 28px;
+      height: 28px;
       background: #fff;
       color: #111;
-      border-radius: 6px;
+      border-radius: 5px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      font-size: 1rem;
+      font-size: 0.95rem;
       box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
   </style>
@@ -269,6 +317,15 @@
         <button class="btn" style="flex: 1; background: #e63946;" onclick="joinRoom('p2')">Play as White (P2)</button>
       </div>
     </div>
+  </div>
+
+  <!-- Animated Dice Rolling Modal Overlay -->
+  <div id="dice-overlay">
+    <div class="dice-roll-stage">
+      <div class="anim-die rolling" id="anim-die-1">?</div>
+      <div class="anim-die rolling" id="anim-die-2">?</div>
+    </div>
+    <div style="font-weight: 600; font-size: 1.1rem; color: #fff;" id="anim-text">Rolling...</div>
   </div>
 
   <header>
@@ -336,7 +393,6 @@
 
       supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-      // Subscribe to Realtime Channel with Presence enabled
       roomChannel = supabaseClient.channel(`game_${roomId}`, {
         config: { 
           broadcast: { self: false },
@@ -349,6 +405,9 @@
           gameState = payload;
           renderCheckers();
           updateActionControls();
+        })
+        .on('broadcast', { event: 'TRIGGER_DICE_ANIM' }, ({ payload }) => {
+          playDiceAnimation(payload.d1, payload.d2, false);
         })
         .on('presence', { event: 'sync' }, () => {
           updatePresenceStatus();
@@ -417,19 +476,57 @@
       return point;
     }
 
+    function getValidDestinations(fromIndex) {
+      if (gameState.dice.length === 0) return [];
+      const isP1 = gameState.turn === 'p1';
+      
+      // If player has checkers on bar, they MUST enter them first
+      if (isP1 && gameState.bar.p1 > 0 && fromIndex !== 'bar') return [];
+      if (!isP1 && gameState.bar.p2 > 0 && fromIndex !== 'bar') return [];
+
+      const validDestinations = [];
+      const uniqueDice = [...new Set(gameState.dice)];
+
+      uniqueDice.forEach(die => {
+        let targetIndex;
+        if (fromIndex === 'bar') {
+          targetIndex = isP1 ? die - 1 : 24 - die;
+        } else {
+          targetIndex = isP1 ? fromIndex + die : fromIndex - die;
+        }
+
+        if (targetIndex >= 0 && targetIndex < 24) {
+          const targetVal = gameState.board[targetIndex];
+          // Valid if open, owned by current player, or contains exactly 1 opponent checker (blot)
+          if ((isP1 && targetVal >= -1) || (!isP1 && targetVal <= 1)) {
+            validDestinations.push({ targetIndex, usedDie: die });
+          }
+        }
+      });
+
+      return validDestinations;
+    }
+
     function renderCheckers() {
       document.querySelectorAll('.point').forEach(p => {
-        p.classList.remove('selected');
+        p.classList.remove('selected', 'valid-move');
         const existing = p.querySelector('.checkers-container');
         if (existing) existing.remove();
       });
 
+      let validDestinations = [];
+      if (gameState.selectedPoint !== null) {
+        validDestinations = getValidDestinations(gameState.selectedPoint);
+      }
+
       gameState.board.forEach((count, index) => {
-        if (count === 0) return;
         const pointEl = document.querySelector(`[data-index="${index}"]`);
         if (!pointEl) return;
 
         if (gameState.selectedPoint === index) pointEl.classList.add('selected');
+        if (validDestinations.some(d => d.targetIndex === index)) pointEl.classList.add('valid-move');
+
+        if (count === 0) return;
 
         const container = document.createElement('div');
         container.className = 'checkers-container';
@@ -464,7 +561,7 @@
     function updateActionControls() {
       const isMyTurn = gameState.turn === myRole;
       document.getElementById('roll-btn').disabled = !isMyTurn || gameState.dice.length > 0;
-      document.getElementById('end-btn').disabled = !isMyTurn || gameState.dice.length === 0;
+      document.getElementById('end-btn').disabled = !isMyTurn;
     }
 
     function rollDice() {
@@ -472,37 +569,111 @@
 
       const d1 = Math.floor(Math.random() * 6) + 1;
       const d2 = Math.floor(Math.random() * 6) + 1;
-      
-      gameState.dice = (d1 === d2) ? [d1, d1, d1, d1] : [d1, d2];
-      
-      renderCheckers();
-      updateActionControls();
-      broadcastState();
+
+      // Broadcast dice animation trigger to opponent
+      if (roomChannel) {
+        roomChannel.send({
+          type: 'broadcast',
+          event: 'TRIGGER_DICE_ANIM',
+          payload: { d1, d2 }
+        });
+      }
+
+      playDiceAnimation(d1, d2, true);
+    }
+
+    function playDiceAnimation(d1, d2, isInitiator) {
+      const overlay = document.getElementById('dice-overlay');
+      const die1 = document.getElementById('anim-die-1');
+      const die2 = document.getElementById('anim-die-2');
+      const text = document.getElementById('anim-text');
+
+      overlay.style.display = 'flex';
+      die1.className = "anim-die rolling";
+      die2.className = "anim-die rolling";
+      text.innerText = "Rolling...";
+
+      let rolls = 0;
+      const interval = setInterval(() => {
+        die1.innerText = Math.floor(Math.random() * 6) + 1;
+        die2.innerText = Math.floor(Math.random() * 6) + 1;
+        rolls++;
+
+        if (rolls > 10) {
+          clearInterval(interval);
+          die1.className = "anim-die";
+          die2.className = "anim-die";
+          die1.innerText = d1;
+          die2.innerText = d2;
+          text.innerText = `Landed on ${d1} and ${d2}!`;
+
+          // Keep outcome visible for 1.5 seconds
+          setTimeout(() => {
+            overlay.style.display = 'none';
+
+            if (isInitiator) {
+              gameState.dice = (d1 === d2) ? [d1, d1, d1, d1] : [d1, d2];
+              renderCheckers();
+              updateActionControls();
+              broadcastState();
+            }
+          }, 1500);
+        }
+      }, 100);
     }
 
     function handlePointClick(index) {
-      if (gameState.turn !== myRole) return;
+      if (gameState.turn !== myRole || gameState.dice.length === 0) return;
 
+      const isP1 = gameState.turn === 'p1';
       const pointVal = gameState.board[index];
-      const isCurrentPlayer = (gameState.turn === 'p1' && pointVal > 0) || (gameState.turn === 'p2' && pointVal < 0);
+      const isCurrentPlayerPoint = (isP1 && pointVal > 0) || (!isP1 && pointVal < 0);
 
+      // If no checker selected, try selecting this point
       if (gameState.selectedPoint === null) {
-        if (isCurrentPlayer) {
-          gameState.selectedPoint = index;
+        if (isCurrentPlayerPoint) {
+          const moves = getValidDestinations(index);
+          if (moves.length > 0) gameState.selectedPoint = index;
         }
       } else {
-        const fromIndex = gameState.selectedPoint;
-        const toIndex = index;
+        // Attempting to move selected checker to clicked point
+        const moves = getValidDestinations(gameState.selectedPoint);
+        const match = moves.find(m => m.targetIndex === index);
 
-        if (fromIndex !== toIndex) {
-          const isP1 = gameState.turn === 'p1';
+        if (match) {
+          const fromIndex = gameState.selectedPoint;
+          const targetVal = gameState.board[index];
 
-          gameState.board[fromIndex] += (isP1 ? -1 : 1);
-          gameState.board[toIndex] += (isP1 ? 1 : -1);
+          // Check for opponent hit (blot)
+          if (isP1 && targetVal === -1) {
+            gameState.board[index] = 0;
+            gameState.bar.p2++;
+          } else if (!isP1 && targetVal === 1) {
+            gameState.board[index] = 0;
+            gameState.bar.p1++;
+          }
+
+          // Move piece
+          if (fromIndex === 'bar') {
+            if (isP1) gameState.bar.p1--;
+            else gameState.bar.p2--;
+          } else {
+            gameState.board[fromIndex] += (isP1 ? -1 : 1);
+          }
+          gameState.board[index] += (isP1 ? 1 : -1);
+
+          // Consume die used
+          const dieIndex = gameState.dice.indexOf(match.usedDie);
+          if (dieIndex > -1) gameState.dice.splice(dieIndex, 1);
+
+          gameState.selectedPoint = null;
+          broadcastState();
+        } else if (isCurrentPlayerPoint) {
+          // Switch selection to new owned point if valid
+          gameState.selectedPoint = index;
+        } else {
+          gameState.selectedPoint = null;
         }
-
-        gameState.selectedPoint = null;
-        broadcastState();
       }
 
       renderCheckers();
