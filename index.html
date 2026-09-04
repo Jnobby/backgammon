@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Mobile Backgammon Live</title>
+  <!-- Supabase JS Library from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * {
@@ -13,7 +14,9 @@
       margin: 0;
       padding: 0;
     }
-    body {
+    html, body {
+      width: 100%;
+      height: 100%;
       background-color: #1a1a1a;
       color: #f0f0f0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -21,9 +24,8 @@
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      min-height: 100vh;
-      overflow: hidden;
       touch-action: manipulation;
+      overflow-x: hidden;
     }
 
     /* Modal / Lobby Setup */
@@ -63,21 +65,45 @@
     header, footer {
       width: 100%;
       max-width: 480px;
-      padding: 12px 16px;
+      padding: 10px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       background: #262626;
       border-bottom: 1px solid #333;
+      flex-shrink: 0;
     }
     footer {
       border-bottom: none;
       border-top: 1px solid #333;
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
+    
+    .status-container {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
     .status {
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
+    .presence-badge {
+      font-size: 0.75rem;
+      color: #888;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #555;
+      display: inline-block;
+    }
+    .dot.online { background: #2ec4b6; }
+
     .status span.p1 { color: #e63946; }
     .status span.p2 { color: #f1faee; }
 
@@ -85,33 +111,35 @@
       background: #457b9d;
       color: #fff;
       border: none;
-      padding: 10px 16px;
+      padding: 12px 18px;
       border-radius: 6px;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       cursor: pointer;
     }
     .btn:disabled {
       background: #555;
-      opacity: 0.5;
+      opacity: 0.4;
     }
 
-    /* Board Frame */
+    /* Responsive Flexible Board Frame */
     .board-container {
       width: 100vw;
       max-width: 480px;
-      height: 72vh;
+      flex: 1;
+      min-height: 320px;
       background: #2b1d14;
-      border: 6px solid #1c130d;
+      border: 4px solid #1c130d;
       display: grid;
-      grid-template-rows: 1fr 30px 1fr;
+      grid-template-rows: 1fr 28px 1fr;
       position: relative;
       box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+      margin: 4px 0;
     }
 
     .half-board {
       display: grid;
-      grid-template-columns: repeat(6, 1fr) 24px repeat(6, 1fr);
+      grid-template-columns: repeat(6, 1fr) 20px repeat(6, 1fr);
       height: 100%;
       position: relative;
     }
@@ -123,8 +151,8 @@
       align-items: center;
       justify-content: space-around;
       padding: 0 10px;
-      font-size: 0.8rem;
-      color: #888;
+      font-size: 0.75rem;
+      color: #aaa;
     }
 
     .bar-section {
@@ -150,7 +178,7 @@
       height: 0;
       border-left: 3.5vw solid transparent;
       border-right: 3.5vw solid transparent;
-      border-top: 28vh solid #3d2b1f;
+      border-top: 24vh solid #3d2b1f;
       z-index: 1;
     }
     .top-half .point.alt::before { border-top-color: #6b4d38; }
@@ -163,7 +191,7 @@
       height: 0;
       border-left: 3.5vw solid transparent;
       border-right: 3.5vw solid transparent;
-      border-bottom: 28vh solid #3d2b1f;
+      border-bottom: 24vh solid #3d2b1f;
       z-index: 1;
     }
     .bottom-half .point.alt::before { border-bottom-color: #6b4d38; }
@@ -184,14 +212,14 @@
       z-index: 2;
       pointer-events: none;
     }
-    .top-half .checkers-container { justify-content: flex-start; padding-top: 4px; }
-    .bottom-half .checkers-container { justify-content: flex-end; padding-bottom: 4px; }
+    .top-half .checkers-container { justify-content: flex-start; padding-top: 2px; }
+    .bottom-half .checkers-container { justify-content: flex-end; padding-bottom: 2px; }
 
     .checker {
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
-      margin: -3px 0;
+      margin: -4px 0;
       box-shadow: 0 2px 4px rgba(0,0,0,0.5);
       border: 2px solid #fff;
     }
@@ -209,11 +237,11 @@
 
     .dice-area {
       display: flex;
-      gap: 12px;
+      gap: 8px;
     }
     .die {
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       background: #fff;
       color: #111;
       border-radius: 6px;
@@ -221,13 +249,14 @@
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      font-size: 1.1rem;
+      font-size: 1rem;
       box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
   </style>
 </head>
 <body>
 
+  <!-- Room Setup Overlay -->
   <div id="lobby-modal">
     <div class="lobby-card">
       <h2>Join Backgammon Room</h2>
@@ -243,7 +272,13 @@
   </div>
 
   <header>
-    <div class="status" id="status-text">Role: Unassigned</div>
+    <div class="status-container">
+      <div class="status" id="status-text">Role: Unassigned</div>
+      <div class="presence-badge">
+        <span class="dot" id="presence-dot"></span>
+        <span id="presence-text">Waiting for players...</span>
+      </div>
+    </div>
     <div class="dice-area" id="dice-container">
       <div class="die">-</div>
       <div class="die">-</div>
@@ -267,7 +302,6 @@
   </footer>
 
   <script>
-    // Configured Supabase Credentials
     const SUPABASE_URL = "https://fquxzzjvmlqgtzgthkmt.supabase.co";
     const SUPABASE_KEY = "sb_publishable_HcU6oFeyIktzlxvtJ87FeA_TYFvLxE4";
 
@@ -288,7 +322,6 @@
       selectedPoint: null
     };
 
-    // Check for room param in URL on load (e.g., myapp.com?room=alex)
     document.addEventListener("DOMContentLoaded", () => {
       const urlParams = new URLSearchParams(window.location.search);
       const roomParam = urlParams.get('room');
@@ -301,12 +334,14 @@
       myRole = role;
       const roomId = document.getElementById('room-id').value.trim() || 'jnobby';
 
-      // Initialize Supabase Client
       supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-      // Subscribe to Realtime Channel
+      // Subscribe to Realtime Channel with Presence enabled
       roomChannel = supabaseClient.channel(`game_${roomId}`, {
-        config: { broadcast: { self: false } }
+        config: { 
+          broadcast: { self: false },
+          presence: { key: myRole }
+        }
       });
 
       roomChannel
@@ -315,13 +350,33 @@
           renderCheckers();
           updateActionControls();
         })
-        .subscribe((status) => {
+        .on('presence', { event: 'sync' }, () => {
+          updatePresenceStatus();
+        })
+        .subscribe(async (status) => {
           if (status === 'SUBSCRIBED') {
+            await roomChannel.track({ role: myRole, onlineAt: new Date().toISOString() });
             document.getElementById('lobby-modal').style.display = 'none';
             initBoard();
             updateActionControls();
           }
         });
+    }
+
+    function updatePresenceStatus() {
+      const state = roomChannel.presenceState();
+      const connectedRoles = Object.keys(state);
+      
+      const dot = document.getElementById('presence-dot');
+      const text = document.getElementById('presence-text');
+
+      if (connectedRoles.length >= 2) {
+        dot.className = "dot online";
+        text.innerText = " Both players connected";
+      } else {
+        dot.className = "dot";
+        text.innerText = ` Waiting for opponent... (${connectedRoles.length}/2)`;
+      }
     }
 
     function broadcastState() {
