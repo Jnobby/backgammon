@@ -54,42 +54,42 @@
     }
     .input-field {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       background: #1a1a1a;
       border: 1px solid #444;
       color: #fff;
       border-radius: 6px;
-      font-size: 1rem;
+      font-size: 1.05rem;
     }
 
     /* Dice Overlay Animation Modal */
     #dice-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.75);
+      background: rgba(0, 0, 0, 0.8);
       z-index: 90;
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 16px;
+      gap: 18px;
     }
     .dice-roll-stage {
       display: flex;
       gap: 20px;
     }
     .anim-die {
-      width: 64px;
-      height: 64px;
+      width: 72px;
+      height: 72px;
       background: #fff;
       color: #111;
-      border-radius: 12px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      font-size: 2.2rem;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+      font-size: 2.5rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
       transform: rotate(0deg);
       transition: transform 0.1s linear;
     }
@@ -104,7 +104,7 @@
     header, footer {
       width: 100%;
       max-width: 480px;
-      padding: 10px 16px;
+      padding: 12px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -115,28 +115,29 @@
     footer {
       border-bottom: none;
       border-top: 1px solid #333;
-      padding-bottom: max(10px, env(safe-area-inset-bottom));
+      padding-bottom: max(12px, env(safe-area-inset-bottom));
+      gap: 12px;
     }
     
     .status-container {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 4px;
     }
     .status {
       font-weight: 600;
-      font-size: 0.85rem;
+      font-size: 0.95rem;
     }
     .presence-badge {
-      font-size: 0.75rem;
-      color: #888;
+      font-size: 0.82rem;
+      color: #aaa;
       display: flex;
       align-items: center;
       gap: 6px;
     }
     .dot {
-      width: 8px;
-      height: 8px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
       background: #555;
       display: inline-block;
@@ -150,10 +151,10 @@
       background: #457b9d;
       color: #fff;
       border: none;
-      padding: 10px 16px;
-      border-radius: 6px;
+      padding: 12px 20px;
+      border-radius: 8px;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 1rem;
       cursor: pointer;
     }
     .btn:disabled {
@@ -161,17 +162,18 @@
       opacity: 0.4;
     }
 
-    /* Fixed Compact Aspect-Ratio Board Frame */
+    /* Scaled Board Frame (Locked Aspect Ratio) */
     .board-container {
-      width: 100vw;
-      max-width: 420px;
-      height: 52vh;
-      max-height: 480px;
-      min-height: 320px;
+      width: calc(100vw - 16px);
+      max-width: 460px;
+      height: 58vh;
+      max-height: 520px;
+      min-height: 360px;
       background: #2b1d14;
-      border: 4px solid #1c130d;
+      border: 5px solid #1c130d;
+      border-radius: 4px;
       display: grid;
-      grid-template-rows: 1fr 24px 1fr;
+      grid-template-rows: 1fr 28px 1fr;
       position: relative;
       box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
       margin: auto 0;
@@ -179,7 +181,7 @@
 
     .half-board {
       display: grid;
-      grid-template-columns: repeat(6, 1fr) 18px repeat(6, 1fr);
+      grid-template-columns: repeat(6, 1fr) 20px repeat(6, 1fr);
       height: 100%;
       position: relative;
     }
@@ -190,9 +192,10 @@
       display: flex;
       align-items: center;
       justify-content: space-around;
-      padding: 0 10px;
-      font-size: 0.75rem;
-      color: #aaa;
+      padding: 0 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #ccc;
     }
 
     .bar-section {
@@ -216,9 +219,9 @@
       top: 0;
       width: 0;
       height: 0;
-      border-left: 3vw solid transparent;
-      border-right: 3vw solid transparent;
-      border-top: 18vh solid #3d2b1f;
+      border-left: 3.5vw solid transparent;
+      border-right: 3.5vw solid transparent;
+      border-top: 21vh solid #3d2b1f;
       z-index: 1;
     }
     .top-half .point.alt::before { border-top-color: #6b4d38; }
@@ -229,16 +232,16 @@
       bottom: 0;
       width: 0;
       height: 0;
-      border-left: 3vw solid transparent;
-      border-right: 3vw solid transparent;
-      border-bottom: 18vh solid #3d2b1f;
+      border-left: 3.5vw solid transparent;
+      border-right: 3.5vw solid transparent;
+      border-bottom: 21vh solid #3d2b1f;
       z-index: 1;
     }
     .bottom-half .point.alt::before { border-bottom-color: #6b4d38; }
 
-    @media (min-width: 420px) {
-      .top-half .point::before { border-left-width: 15px; border-right-width: 15px; border-top-width: 160px; }
-      .bottom-half .point::before { border-left-width: 15px; border-right-width: 15px; border-bottom-width: 160px; }
+    @media (min-width: 460px) {
+      .top-half .point::before { border-left-width: 17px; border-right-width: 17px; border-top-width: 185px; }
+      .bottom-half .point::before { border-left-width: 17px; border-right-width: 17px; border-bottom-width: 185px; }
     }
 
     /* Checkers stack */
@@ -252,15 +255,15 @@
       z-index: 2;
       pointer-events: none;
     }
-    .top-half .checkers-container { justify-content: flex-start; padding-top: 2px; }
-    .bottom-half .checkers-container { justify-content: flex-end; padding-bottom: 2px; }
+    .top-half .checkers-container { justify-content: flex-start; padding-top: 3px; }
+    .bottom-half .checkers-container { justify-content: flex-end; padding-bottom: 3px; }
 
     .checker {
-      width: 24px;
-      height: 24px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       margin: -5px 0;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.6);
       border: 2px solid #fff;
     }
     .checker.p1 { background: #e63946; border-color: #ff8fa3; }
@@ -285,20 +288,20 @@
 
     .dice-area {
       display: flex;
-      gap: 6px;
+      gap: 8px;
     }
     .die {
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       background: #fff;
       color: #111;
-      border-radius: 5px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      font-size: 0.95rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      font-size: 1.05rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
     }
   </style>
 </head>
@@ -308,7 +311,7 @@
   <div id="lobby-modal">
     <div class="lobby-card">
       <h2>Join Backgammon Room</h2>
-      <p style="font-size: 0.85rem; color: #aaa;">Enter your room code and select your role to start playing.</p>
+      <p style="font-size: 0.9rem; color: #aaa;">Enter your room code and select your role to start playing.</p>
       
       <input type="text" id="room-id" class="input-field" placeholder="Room Code" value="jnobby" />
       
@@ -325,7 +328,7 @@
       <div class="anim-die rolling" id="anim-die-1">?</div>
       <div class="anim-die rolling" id="anim-die-2">?</div>
     </div>
-    <div style="font-weight: 600; font-size: 1.1rem; color: #fff;" id="anim-text">Rolling...</div>
+    <div style="font-weight: 600; font-size: 1.2rem; color: #fff;" id="anim-text">Rolling...</div>
   </div>
 
   <header>
@@ -354,8 +357,8 @@
   </main>
 
   <footer>
-    <button class="btn" id="roll-btn" onclick="rollDice()" disabled>Roll Dice</button>
-    <button class="btn" id="end-btn" onclick="switchTurn()" disabled>End Turn</button>
+    <button class="btn" id="roll-btn" style="flex: 1;" onclick="rollDice()" disabled>Roll Dice</button>
+    <button class="btn" id="end-btn" style="flex: 1;" onclick="switchTurn()" disabled>End Turn</button>
   </footer>
 
   <script>
@@ -480,7 +483,6 @@
       if (gameState.dice.length === 0) return [];
       const isP1 = gameState.turn === 'p1';
       
-      // If player has checkers on bar, they MUST enter them first
       if (isP1 && gameState.bar.p1 > 0 && fromIndex !== 'bar') return [];
       if (!isP1 && gameState.bar.p2 > 0 && fromIndex !== 'bar') return [];
 
@@ -497,7 +499,6 @@
 
         if (targetIndex >= 0 && targetIndex < 24) {
           const targetVal = gameState.board[targetIndex];
-          // Valid if open, owned by current player, or contains exactly 1 opponent checker (blot)
           if ((isP1 && targetVal >= -1) || (!isP1 && targetVal <= 1)) {
             validDestinations.push({ targetIndex, usedDie: die });
           }
@@ -570,7 +571,6 @@
       const d1 = Math.floor(Math.random() * 6) + 1;
       const d2 = Math.floor(Math.random() * 6) + 1;
 
-      // Broadcast dice animation trigger to opponent
       if (roomChannel) {
         roomChannel.send({
           type: 'broadcast',
@@ -607,7 +607,6 @@
           die2.innerText = d2;
           text.innerText = `Landed on ${d1} and ${d2}!`;
 
-          // Keep outcome visible for 1.5 seconds
           setTimeout(() => {
             overlay.style.display = 'none';
 
@@ -629,14 +628,12 @@
       const pointVal = gameState.board[index];
       const isCurrentPlayerPoint = (isP1 && pointVal > 0) || (!isP1 && pointVal < 0);
 
-      // If no checker selected, try selecting this point
       if (gameState.selectedPoint === null) {
         if (isCurrentPlayerPoint) {
           const moves = getValidDestinations(index);
           if (moves.length > 0) gameState.selectedPoint = index;
         }
       } else {
-        // Attempting to move selected checker to clicked point
         const moves = getValidDestinations(gameState.selectedPoint);
         const match = moves.find(m => m.targetIndex === index);
 
@@ -644,7 +641,6 @@
           const fromIndex = gameState.selectedPoint;
           const targetVal = gameState.board[index];
 
-          // Check for opponent hit (blot)
           if (isP1 && targetVal === -1) {
             gameState.board[index] = 0;
             gameState.bar.p2++;
@@ -653,7 +649,6 @@
             gameState.bar.p1++;
           }
 
-          // Move piece
           if (fromIndex === 'bar') {
             if (isP1) gameState.bar.p1--;
             else gameState.bar.p2--;
@@ -662,14 +657,12 @@
           }
           gameState.board[index] += (isP1 ? 1 : -1);
 
-          // Consume die used
           const dieIndex = gameState.dice.indexOf(match.usedDie);
           if (dieIndex > -1) gameState.dice.splice(dieIndex, 1);
 
           gameState.selectedPoint = null;
           broadcastState();
         } else if (isCurrentPlayerPoint) {
-          // Switch selection to new owned point if valid
           gameState.selectedPoint = index;
         } else {
           gameState.selectedPoint = null;
