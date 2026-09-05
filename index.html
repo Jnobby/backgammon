@@ -2,225 +2,111 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Mobile Backgammon Live</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mobile Backgammon</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
+    :root {
+      --bg-color: #1a1716;
+      --board-felt: #2b1e1a;
+      --point-dark: #3a2219;
+      --point-light: #d6af82;
+      --bar-color: #120e0d;
+      --p1-color: #7c402b;
+      --p1-border: #9b533a;
+      --p2-color: #f0ebd8;
+      --p2-border: #ffffff;
+      --accent: #d4a373;
+      --highlight: #52b788;
+    }
+
     * {
       box-sizing: border-box;
-      user-select: none;
-      -webkit-user-select: none;
       margin: 0;
       padding: 0;
-    }
-    html, body {
-      width: 100vw;
-      height: 100vh;
-      height: 100dvh;
-      background-color: #120d0a;
-      color: #f0f0f0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
       touch-action: manipulation;
     }
 
-    #lobby-modal, #win-modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.85);
-      z-index: 100;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    #win-modal { display: none; }
-    
-    .lobby-card {
-      background: #231812;
-      border: 1px solid #5c3a21;
-      border-radius: 12px;
-      padding: 20px;
-      width: 100%;
-      max-width: 320px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-      text-align: center;
-    }
-    .input-field {
-      width: 100%;
-      padding: 10px;
-      background: #120d0a;
-      border: 1px solid #5c3a21;
+    body {
+      background-color: var(--bg-color);
       color: #fff;
-      border-radius: 6px;
-      font-size: 1rem;
-    }
-
-    #dice-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      z-index: 90;
-      display: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      height: 100vh;
+      display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 16px;
-    }
-    .dice-roll-stage { display: flex; gap: 16px; }
-    .anim-die {
-      width: 56px;
-      height: 56px;
-      background: #f4ebd0;
-      color: #24150e;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 2rem;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
-    }
-    .anim-die.rolling { animation: shake 0.15s infinite alternate; }
-    @keyframes shake {
-      0% { transform: rotate(-12deg) scale(0.95); }
-      100% { transform: rotate(12deg) scale(1.05); }
-    }
-
-    /* Strict Responsive Layout Engine */
-    .app-container {
-      width: 100vw;
-      height: 100dvh;
-      max-width: calc(100dvh * (16 / 9));
-      max-height: calc(100vw * (9 / 16));
-      aspect-ratio: 16 / 9;
-      display: grid;
-      grid-template-rows: minmax(28px, 6vh) 1fr;
-      background: #120d0a;
-      padding: max(4px, env(safe-area-inset-top)) max(4px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left));
+      justify-content: space-between;
+      overflow: hidden;
+      padding: 8px;
     }
 
     header {
       width: 100%;
-      padding: 0 8px;
+      max-width: 500px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #1c130d;
-      border-bottom: 2px solid #3d2414;
-      z-index: 10;
+      padding: 8px 12px;
+      background: #26211f;
+      border-radius: 8px;
+      font-size: 0.85rem;
     }
-    
-    .status-container { display: flex; align-items: center; gap: 12px; }
-    .status { font-weight: 600; font-size: clamp(0.7rem, 1.8vh, 0.85rem); }
-    .presence-badge { font-size: clamp(0.65rem, 1.5vh, 0.75rem); color: #aaa; display: flex; align-items: center; gap: 4px; }
-    .dot { width: 7px; height: 7px; border-radius: 50%; background: #555; display: inline-block; }
-    .dot.online { background: #2ec4b6; }
 
-    .status span.p1 { color: #d9a05b; }
-    .status span.p2 { color: #f4ebd0; }
-
-    .btn {
-      background: #8b5a2b;
-      color: #fff;
-      border: 1px solid #a8733e;
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: clamp(0.7rem, 1.8vh, 0.85rem);
-      cursor: pointer;
+    .status-container {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .btn:disabled { background: #3d2b1f; border-color: #2b1d14; opacity: 0.35; }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #e63946;
+    }
+
+    .dot.online {
+      background-color: var(--highlight);
+    }
 
     .game-layout {
-      display: grid;
-      grid-template-columns: minmax(65px, 11%) 1fr;
-      height: 100%;
       width: 100%;
-      overflow: hidden;
-    }
-
-    .controls-panel {
-      background: #1c130d;
-      border-right: 2px solid #3d2414;
+      max-width: 500px;
+      flex-grow: 1;
       display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding: 6px;
-      justify-content: center;
-      align-items: stretch;
-    }
-
-    /* Responsive Board Engine */
-    .board-wrapper {
-      background: #2d1a0e;
-      border: 4px solid #1a0f08;
-      box-shadow: inset 0 0 15px rgba(0,0,0,0.9);
-      display: grid;
-      grid-template-columns: minmax(18px, 4.5%) 1fr minmax(18px, 4.5%);
-      height: 100%;
-      width: 100%;
-      overflow: hidden;
-      container-type: size;
+      gap: 6px;
+      margin: 8px 0;
+      max-height: calc(100vh - 140px);
     }
 
     .off-tray {
-      background: #1a0f08;
-      border-left: 1px solid #0d0704;
-      border-right: 1px solid #0d0704;
+      width: 28px;
+      background: var(--bar-color);
+      border-radius: 6px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 2px 1px;
-      cursor: pointer;
+      justify-content: flex-end;
+      padding: 4px 2px;
+      gap: 2px;
+      border: 1px solid #332a27;
     }
+
     .off-tray.valid-move {
-      background: rgba(46, 196, 182, 0.25);
-      border: 2px dashed #2ec4b6;
-    }
-    .off-slot {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      width: 100%;
-      align-items: center;
+      box-shadow: 0 0 8px var(--highlight);
+      border-color: var(--highlight);
     }
 
-    .board-container {
+    .board {
+      flex-grow: 1;
+      background-color: var(--board-felt);
+      border-radius: 8px;
+      border: 4px solid #3a2e2b;
       display: grid;
-      grid-template-columns: repeat(6, 1fr) minmax(16px, 4%) repeat(6, 1fr);
-      grid-template-rows: 1fr 1fr;
-      background: #8b5a2b;
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-rows: repeat(2, 1fr);
       position: relative;
-      height: 100%;
-      width: 100%;
-    }
-
-    .bar-vertical {
-      grid-column: 7;
-      grid-row: 1 / span 2;
-      background: #3d2414;
-      border-left: 1px solid #1e1109;
-      border-right: 1px solid #1e1109;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 2px;
-      z-index: 10;
-      cursor: pointer;
-    }
-    .bar-vertical.selected {
-      background: rgba(217, 160, 91, 0.5);
-      outline: 2px solid #d9a05b;
     }
 
     .point {
@@ -229,170 +115,303 @@
       flex-direction: column;
       align-items: center;
       cursor: pointer;
-      overflow: hidden;
-      height: 100%;
-      width: 100%;
     }
 
-    .point::before {
-      content: "";
+    .top-point {
+      grid-row: 1;
+      justify-content: flex-start;
+      clip-path: polygon(0 0, 100% 0, 50% 85%);
+      background-color: var(--point-dark);
+    }
+
+    .top-point.alt {
+      background-color: var(--point-light);
+    }
+
+    .bottom-point {
+      grid-row: 2;
+      justify-content: flex-end;
+      clip-path: polygon(50% 15%, 100% 100%, 0 100%);
+      background-color: var(--point-dark);
+    }
+
+    .bottom-point.alt {
+      background-color: var(--point-light);
+    }
+
+    .point.selected {
+      filter: brightness(1.4);
+    }
+
+    .point.valid-move::after {
+      content: '';
       position: absolute;
-      width: 100%;
-      height: 92%;
-      background-color: #f4ebd0;
-      z-index: 1;
-    }
-    .point.alt::before { background-color: #24150e; }
-
-    .top-point::before {
-      top: 0;
-      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: var(--highlight);
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 5;
     }
 
-    .bottom-point::before {
-      bottom: 0;
-      clip-path: polygon(0 100%, 100% 100%, 50% 0);
+    .bar-vertical {
+      grid-column: 6 / 8;
+      grid-row: 1 / 3;
+      background: var(--bar-color);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      border-left: 2px solid #28201d;
+      border-right: 2px solid #28201d;
+    }
+
+    .bar-vertical.selected {
+      box-shadow: inset 0 0 10px var(--accent);
     }
 
     .checkers-container {
       position: absolute;
-      width: 100%;
-      height: 100%;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      z-index: 2;
+      z-index: 3;
       pointer-events: none;
     }
-    .top-point .checkers-container { justify-content: flex-start; padding-top: 2px; }
-    .bottom-point .checkers-container { justify-content: flex-end; padding-bottom: 2px; }
+
+    .top-point .checkers-container {
+      justify-content: flex-start;
+      padding-top: 2px;
+    }
+
+    .bottom-point .checkers-container {
+      justify-content: flex-end;
+      padding-bottom: 2px;
+    }
 
     .checker {
-      width: clamp(12px, 5.2cqw, 28px);
-      height: clamp(12px, 5.2cqw, 28px);
+      width: 90%;
+      aspect-ratio: 1;
       border-radius: 50%;
-      margin-top: calc(-1 * clamp(2px, 1.1cqw, 6px));
-      margin-bottom: calc(-1 * clamp(2px, 1.1cqw, 6px));
-      box-shadow: 0 2px 4px rgba(0,0,0,0.7);
-      flex-shrink: 0;
+      margin-bottom: -12%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
+
     .checker.p1 {
-      background: radial-gradient(circle at 30% 30%, #6a4023, #24150e);
-      border: 1px solid #8b5a2b;
+      background: radial-gradient(circle at 30% 30%, #a8583c, var(--p1-color));
+      border: 1px solid var(--p1-border);
     }
+
     .checker.p2 {
-      background: radial-gradient(circle at 30% 30%, #ffffff, #dcd3bd);
-      border: 1px solid #a89f8d;
+      background: radial-gradient(circle at 30% 30%, #ffffff, var(--p2-color));
+      border: 1px solid var(--p2-border);
     }
 
     .checker-mini {
-      width: 16px;
-      height: 6px;
+      width: 100%;
+      height: 8px;
       border-radius: 2px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.5);
-    }
-    .checker-mini.p1 { background: #24150e; border: 1px solid #6a4023; }
-    .checker-mini.p2 { background: #f4ebd0; border: 1px solid #a89f8d; }
-
-    .point.selected::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: rgba(217, 160, 91, 0.4);
-      z-index: 3;
-      border: 2px solid #d9a05b;
-    }
-    .point.valid-move::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: rgba(46, 196, 182, 0.35);
-      z-index: 3;
-      border: 2px dashed #2ec4b6;
     }
 
-    .dice-area { display: flex; gap: 4px; }
-    .die {
-      width: clamp(20px, 4vh, 26px);
-      height: clamp(20px, 4vh, 26px);
-      background: #f4ebd0;
-      color: #24150e;
-      border-radius: 4px;
+    .checker-mini.p1 { background-color: var(--p1-color); }
+    .checker-mini.p2 { background-color: var(--p2-color); }
+
+    .controls {
+      width: 100%;
+      max-width: 500px;
       display: flex;
-      align-items: center;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .dice-area {
+      display: flex;
       justify-content: center;
+      align-items: center;
+      gap: 12px;
+      min-height: 44px;
+    }
+
+    .die {
+      width: 40px;
+      height: 40px;
+      background: #fff;
+      color: #000;
+      border-radius: 6px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       font-weight: bold;
-      font-size: clamp(0.75rem, 1.8vh, 0.9rem);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      font-size: 1.2rem;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      background-color: var(--accent);
+      color: #1a1716;
+      font-weight: bold;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .modal-content {
+      background: #26211f;
+      padding: 24px;
+      border-radius: 12px;
+      width: 85%;
+      max-width: 360px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #443c38;
+      background: #1a1716;
+      color: #fff;
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    /* Dice Animation Overlay */
+    .dice-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9;
+      gap: 16px;
+    }
+
+    .anim-dice-container {
+      display: flex;
+      gap: 20px;
+    }
+
+    .anim-die {
+      width: 60px;
+      height: 60px;
+      background: #fff;
+      color: #000;
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+
+    .anim-die.rolling {
+      animation: spin 0.15s infinite linear;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(180deg) scale(1.15); }
+      100% { transform: rotate(360deg) scale(1); }
     }
   </style>
 </head>
 <body>
 
-  <div id="lobby-modal">
-    <div class="lobby-card">
-      <h2>Join Backgammon Room</h2>
-      <p style="font-size: 0.8rem; color: #aaa;">Rotate device to landscape orientation.</p>
-      <input type="text" id="room-id" class="input-field" placeholder="Room Code" value="jnobby" />
-      <div style="display: flex; gap: 8px;">
-        <button class="btn" style="flex: 1;" onclick="joinRoom('p1')">Brown (P1)</button>
-        <button class="btn" style="flex: 1; background: #f4ebd0; color: #24150e;" onclick="joinRoom('p2')">Ivory (P2)</button>
-      </div>
+  <header>
+    <div id="status-text">Connecting...</div>
+    <div class="status-container">
+      <div id="presence-dot" class="dot"></div>
+      <span id="presence-text" style="font-size: 0.75rem;">Offline</span>
+    </div>
+  </header>
+
+  <div class="game-layout">
+    <div id="off-tray-left" class="off-tray" onclick="handleOffClick()">
+      <div id="off-p2"></div>
+    </div>
+
+    <div class="board" id="main-board">
+      <div class="bar-vertical" id="bar-vertical" onclick="handleBarClick()"></div>
+    </div>
+
+    <div id="off-tray-right" class="off-tray" onclick="handleOffClick()">
+      <div id="off-p1"></div>
     </div>
   </div>
 
-  <div id="win-modal">
-    <div class="lobby-card">
+  <div class="controls">
+    <div class="dice-area" id="dice-container">
+      <div class="die">-</div>
+      <div class="die">-</div>
+    </div>
+    <div class="btn-group">
+      <button id="roll-btn" onclick="rollDice()" disabled>Roll Dice</button>
+      <button id="undo-btn" onclick="undoMove()" disabled>Undo</button>
+      <button id="end-btn" onclick="switchTurn()" disabled>End Turn</button>
+    </div>
+  </div>
+
+  <!-- Lobby Modal -->
+  <div id="lobby-modal" class="modal">
+    <div class="modal-content">
+      <h2>Join Game</h2>
+      <input type="text" id="room-id" value="jnobby" placeholder="Enter Room Name">
+      <button onclick="joinRoom('p1')">Play as Brown (P1)</button>
+      <button onclick="joinRoom('p2')">Play as Ivory (P2)</button>
+    </div>
+  </div>
+
+  <!-- Win Modal -->
+  <div id="win-modal" class="modal" style="display: none;">
+    <div class="modal-content">
       <h2 id="win-title">Victory!</h2>
-      <p id="win-desc" style="font-size: 0.85rem; color: #ccc; margin-top: 4px;"></p>
-      <button class="btn" style="margin-top: 12px;" onclick="resetGame()">Play Again</button>
+      <p id="win-desc"></p>
+      <button onclick="resetGame()">Play Again</button>
     </div>
   </div>
 
-  <div id="dice-overlay">
-    <div class="dice-roll-stage">
-      <div class="anim-die rolling" id="anim-die-1">?</div>
-      <div class="anim-die rolling" id="anim-die-2">?</div>
+  <!-- Dice Roll Overlay -->
+  <div id="dice-overlay" class="dice-overlay">
+    <div class="anim-dice-container">
+      <div id="anim-die-1" class="anim-die">1</div>
+      <div id="anim-die-2" class="anim-die">1</div>
     </div>
-    <div style="font-weight: 600; font-size: 1rem; color: #fff;" id="anim-text">Rolling...</div>
-  </div>
-
-  <div class="app-container">
-    <header>
-      <div class="status-container">
-        <div class="status" id="status-text">Role: Unassigned</div>
-        <div class="presence-badge">
-          <span class="dot" id="presence-dot"></span>
-          <span id="presence-text">Waiting...</span>
-        </div>
-      </div>
-      <div class="dice-area" id="dice-container">
-        <div class="die">-</div>
-        <div class="die">-</div>
-      </div>
-    </header>
-
-    <div class="game-layout">
-      <div class="controls-panel">
-        <button class="btn" id="roll-btn" onclick="rollDice()" disabled>Roll</button>
-        <button class="btn" id="undo-btn" style="background: #4a3222; border-color: #6a4831;" onclick="undoMove()" disabled>Undo</button>
-        <button class="btn" id="end-btn" style="background: #2e6243; border-color: #3b8058;" onclick="switchTurn()" disabled>End Turn</button>
-      </div>
-
-      <main class="board-wrapper">
-        <div class="off-tray" id="off-tray-left" onclick="handleOffClick()">
-          <div class="off-slot" id="off-p2"></div>
-        </div>
-
-        <div class="board-container" id="main-board">
-          <div class="bar-vertical" id="bar-vertical" onclick="handleBarClick()"></div>
-        </div>
-
-        <div class="off-tray" id="off-tray-right" onclick="handleOffClick()">
-          <div class="off-slot" id="off-p1"></div>
-        </div>
-      </main>
-    </div>
+    <div id="anim-text" style="color: #fff; font-weight: bold;">Rolling...</div>
   </div>
 
   <script>
@@ -402,6 +421,7 @@
     let supabaseClient = null;
     let roomChannel = null;
     let myRole = 'p1'; 
+    let currentRoomId = 'jnobby';
 
     let gameState = {
       board: [
@@ -423,14 +443,29 @@
       const urlParams = new URLSearchParams(window.location.search);
       const roomParam = urlParams.get('room');
       if (roomParam) document.getElementById('room-id').value = roomParam;
+
+      // Automatically recover connection and request state sync when tab or phone resumes focus
+      document.addEventListener("visibilitychange", handleAppResume);
+      window.addEventListener("focus", handleAppResume);
+      window.addEventListener("online", handleAppResume);
     });
 
     function joinRoom(role) {
       myRole = role;
-      const roomId = document.getElementById('room-id').value.trim() || 'jnobby';
-      supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      currentRoomId = document.getElementById('room-id').value.trim() || 'jnobby';
+      connectSupabase();
+    }
 
-      roomChannel = supabaseClient.channel(`game_${roomId}`, {
+    function connectSupabase() {
+      if (!supabaseClient) {
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+
+      if (roomChannel) {
+        supabaseClient.removeChannel(roomChannel);
+      }
+
+      roomChannel = supabaseClient.channel(`game_${currentRoomId}`, {
         config: { broadcast: { self: false }, presence: { key: myRole } }
       });
 
@@ -445,6 +480,12 @@
         .on('broadcast', { event: 'TRIGGER_DICE_ANIM' }, ({ payload }) => {
           playDiceAnimation(payload.d1, payload.d2, false);
         })
+        .on('broadcast', { event: 'REQUEST_STATE_SYNC' }, () => {
+          // Send current state if it's currently your turn or if state is updated
+          if (gameState.turn === myRole) {
+            broadcastState();
+          }
+        })
         .on('presence', { event: 'sync' }, () => updatePresenceStatus())
         .subscribe(async (status) => {
           if (status === 'SUBSCRIBED') {
@@ -452,8 +493,18 @@
             document.getElementById('lobby-modal').style.display = 'none';
             initBoard();
             updateActionControls();
+            
+            // Request latest state from opponent upon connection/reconnection
+            roomChannel.send({ type: 'broadcast', event: 'REQUEST_STATE_SYNC', payload: {} });
           }
         });
+    }
+
+    function handleAppResume() {
+      if (document.visibilityState === 'visible' && roomChannel) {
+        // Re-establish channel if dropped during call
+        connectSupabase();
+      }
     }
 
     function updatePresenceStatus() {
@@ -701,7 +752,6 @@
       const movesLeft = gameState.dice.length;
       const legalMovesRemain = hasAnyLegalMoves();
 
-      // End turn locked until all dice moves are played or no remaining legal moves exist
       const canEndTurn = isMyTurn && (movesLeft === 0 || !legalMovesRemain) && moveHistory.length > 0;
 
       document.getElementById('roll-btn').disabled = !isMyTurn || movesLeft > 0 || moveHistory.length > 0;
