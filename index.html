@@ -171,7 +171,7 @@
       border-left: 6px solid #1c130d;
       border-right: 6px solid #1c130d;
       display: grid;
-      grid-template-rows: 1fr 32px 1fr;
+      grid-template-rows: 1fr auto 1fr;
       position: relative;
       box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
       container-type: size;
@@ -179,7 +179,7 @@
 
     .half-board {
       display: grid;
-      grid-template-columns: repeat(6, 1fr) 24px repeat(6, 1fr);
+      grid-template-columns: repeat(6, 1fr) 36px repeat(6, 1fr);
       height: 100%;
       position: relative;
     }
@@ -188,18 +188,31 @@
       background: #1c130d;
       grid-row: 2;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: space-around;
-      padding: 0 16px;
-      font-size: 0.9rem;
+      justify-content: center;
+      padding: 6px 0;
+      gap: 8px;
+      font-size: 0.85rem;
       font-weight: 600;
       color: #ccc;
+      cursor: pointer;
     }
 
-    .bar-section {
+    .bar-slot {
       display: flex;
-      gap: 6px;
+      flex-direction: row;
       align-items: center;
+      justify-content: center;
+      gap: 4px;
+      min-height: 32px;
+      width: 100%;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    .bar-slot.selected {
+      background: rgba(230, 57, 70, 0.35);
+      outline: 2px solid #e63946;
     }
 
     .point {
@@ -340,9 +353,9 @@
   <main class="board-container">
     <div class="half-board top-half" id="top-board"></div>
 
-    <div class="bar">
-      <div class="bar-section">Bar P1: <span id="bar-p1">0</span></div>
-      <div class="bar-section">Bar P2: <span id="bar-p2">0</span></div>
+    <div class="bar" id="central-bar" onclick="handleBarClick()">
+      <div class="bar-slot" id="bar-slot-p1"></div>
+      <div class="bar-slot" id="bar-slot-p2"></div>
     </div>
 
     <div class="half-board bottom-half" id="bottom-board"></div>
@@ -475,6 +488,7 @@
       if (gameState.dice.length === 0) return [];
       const isP1 = gameState.turn === 'p1';
       
+      // If player has checkers on bar, they MUST enter them first
       if (isP1 && gameState.bar.p1 > 0 && fromIndex !== 'bar') return [];
       if (!isP1 && gameState.bar.p2 > 0 && fromIndex !== 'bar') return [];
 
@@ -484,6 +498,7 @@
       uniqueDice.forEach(die => {
         let targetIndex;
         if (fromIndex === 'bar') {
+          // P1 enters onto points 0..5 (die - 1). P2 enters onto points 23..18 (24 - die).
           targetIndex = isP1 ? die - 1 : 24 - die;
         } else {
           targetIndex = isP1 ? fromIndex + die : fromIndex - die;
@@ -535,8 +550,35 @@
         pointEl.appendChild(container);
       });
 
-      document.getElementById('bar-p1').innerText = gameState.bar.p1;
-      document.getElementById('bar-p2').innerText = gameState.bar.p2;
+      // Render Bar Checkers Visually
+      const barSlotP1 = document.getElementById('bar-slot-p1');
+      const barSlotP2 = document.getElementById('bar-slot-p2');
+      barSlotP1.innerHTML = '';
+      barSlotP2.innerHTML = '';
+      barSlotP1.classList.remove('selected');
+      barSlotP2.classList.remove('selected');
+
+      if (gameState.bar.p1 > 0) {
+        for (let i = 0; i < gameState.bar.p1; i++) {
+          const chk = document.createElement('div');
+          chk.className = 'checker p1';
+          barSlotP1.appendChild(chk);
+        }
+        if (gameState.selectedPoint === 'bar' && gameState.turn === 'p1') {
+          barSlotP1.classList.add('selected');
+        }
+      }
+
+      if (gameState.bar.p2 > 0) {
+        for (let i = 0; i < gameState.bar.p2; i++) {
+          const chk = document.createElement('div');
+          chk.className = 'checker p2';
+          barSlotP2.appendChild(chk);
+        }
+        if (gameState.selectedPoint === 'bar' && gameState.turn === 'p2') {
+          barSlotP2.classList.add('selected');
+        }
+      }
 
       const diceContainer = document.getElementById('dice-container');
       if (gameState.dice.length > 0) {
@@ -604,6 +646,15 @@
 
             if (isInitiator) {
               gameState.dice = (d1 === d2) ? [d1, d1, d1, d1] : [d1, d2];
+              
+              // Automatically select bar if active player has checkers on it
+              const isP1 = gameState.turn === 'p1';
+              if ((isP1 && gameState.bar.p1 > 0) || (!isP1 && gameState.bar.p2 > 0)) {
+                gameState.selectedPoint = 'bar';
+              } else {
+                gameState.selectedPoint = null;
+              }
+
               renderCheckers();
               updateActionControls();
               broadcastState();
@@ -613,10 +664,29 @@
       }, 100);
     }
 
+    function handleBarClick() {
+      if (gameState.turn !== myRole || gameState.dice.length === 0) return;
+
+      const isP1 = gameState.turn === 'p1';
+      const hasBarCheckers = isP1 ? gameState.bar.p1 > 0 : gameState.bar.p2 > 0;
+
+      if (hasBarCheckers) {
+        gameState.selectedPoint = 'bar';
+        renderCheckers();
+      }
+    }
+
     function handlePointClick(index) {
       if (gameState.turn !== myRole || gameState.dice.length === 0) return;
 
       const isP1 = gameState.turn === 'p1';
+      const hasBarCheckers = isP1 ? gameState.bar.p1 > 0 : gameState.bar.p2 > 0;
+
+      // Force bar selection if player has checkers on the bar
+      if (hasBarCheckers && gameState.selectedPoint !== 'bar') {
+        gameState.selectedPoint = 'bar';
+      }
+
       const pointVal = gameState.board[index];
       const isCurrentPlayerPoint = (isP1 && pointVal > 0) || (!isP1 && pointVal < 0);
 
@@ -633,6 +703,7 @@
           const fromIndex = gameState.selectedPoint;
           const targetVal = gameState.board[index];
 
+          // Hit opponent blot
           if (isP1 && targetVal === -1) {
             gameState.board[index] = 0;
             gameState.bar.p2++;
@@ -641,6 +712,7 @@
             gameState.bar.p1++;
           }
 
+          // Move checker off bar or off point
           if (fromIndex === 'bar') {
             if (isP1) gameState.bar.p1--;
             else gameState.bar.p2--;
@@ -649,14 +721,18 @@
           }
           gameState.board[index] += (isP1 ? 1 : -1);
 
+          // Consume used die
           const dieIndex = gameState.dice.indexOf(match.usedDie);
           if (dieIndex > -1) gameState.dice.splice(dieIndex, 1);
 
-          gameState.selectedPoint = null;
+          // If still have checkers on bar, keep bar selected; otherwise clear selection
+          const stillHasBar = isP1 ? gameState.bar.p1 > 0 : gameState.bar.p2 > 0;
+          gameState.selectedPoint = stillHasBar ? 'bar' : null;
+
           broadcastState();
-        } else if (isCurrentPlayerPoint) {
+        } else if (isCurrentPlayerPoint && !hasBarCheckers) {
           gameState.selectedPoint = index;
-        } else {
+        } else if (!hasBarCheckers) {
           gameState.selectedPoint = null;
         }
       }
