@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Mobile Backgammon Live</title>
-  <!-- Supabase JS Library from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * {
@@ -17,7 +16,7 @@
     html, body {
       width: 100%;
       height: 100%;
-      background-color: #1a1a1a;
+      background-color: #120d0a;
       color: #f0f0f0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       display: flex;
@@ -28,8 +27,7 @@
       overflow: hidden;
     }
 
-    /* Modal / Lobby Setup */
-    #lobby-modal {
+    #lobby-modal, #win-modal {
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.85);
@@ -40,9 +38,11 @@
       justify-content: center;
       padding: 20px;
     }
+    #win-modal { display: none; }
+    
     .lobby-card {
-      background: #262626;
-      border: 1px solid #444;
+      background: #231812;
+      border: 1px solid #5c3a21;
       border-radius: 12px;
       padding: 24px;
       width: 100%;
@@ -50,19 +50,19 @@
       display: flex;
       flex-direction: column;
       gap: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      text-align: center;
     }
     .input-field {
       width: 100%;
       padding: 12px;
-      background: #1a1a1a;
-      border: 1px solid #444;
+      background: #120d0a;
+      border: 1px solid #5c3a21;
       color: #fff;
       border-radius: 6px;
       font-size: 1.05rem;
     }
 
-    /* Dice Overlay Animation Modal */
     #dice-overlay {
       position: fixed;
       inset: 0;
@@ -74,15 +74,12 @@
       justify-content: center;
       gap: 18px;
     }
-    .dice-roll-stage {
-      display: flex;
-      gap: 20px;
-    }
+    .dice-roll-stage { display: flex; gap: 20px; }
     .anim-die {
       width: 72px;
       height: 72px;
-      background: #fff;
-      color: #111;
+      background: #f4ebd0;
+      color: #24150e;
       border-radius: 14px;
       display: flex;
       align-items: center;
@@ -91,11 +88,8 @@
       font-size: 2.5rem;
       box-shadow: 0 8px 24px rgba(0,0,0,0.6);
       transform: rotate(0deg);
-      transition: transform 0.1s linear;
     }
-    .anim-die.rolling {
-      animation: shake 0.15s infinite alternate;
-    }
+    .anim-die.rolling { animation: shake 0.15s infinite alternate; }
     @keyframes shake {
       0% { transform: rotate(-12deg) scale(0.95); }
       100% { transform: rotate(12deg) scale(1.05); }
@@ -107,112 +101,110 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #262626;
-      border-bottom: 1px solid #333;
+      background: #1c130d;
+      border-bottom: 2px solid #3d2414;
       flex-shrink: 0;
       z-index: 10;
     }
     footer {
       border-bottom: none;
-      border-top: 1px solid #333;
+      border-top: 2px solid #3d2414;
       padding-bottom: max(12px, env(safe-area-inset-bottom));
       gap: 12px;
     }
     
-    .status-container {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .status {
-      font-weight: 600;
-      font-size: 0.95rem;
-    }
-    .presence-badge {
-      font-size: 0.82rem;
-      color: #aaa;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: #555;
-      display: inline-block;
-    }
+    .status-container { display: flex; flex-direction: column; gap: 4px; }
+    .status { font-weight: 600; font-size: 0.95rem; }
+    .presence-badge { font-size: 0.82rem; color: #aaa; display: flex; align-items: center; gap: 6px; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: #555; display: inline-block; }
     .dot.online { background: #2ec4b6; }
 
-    .status span.p1 { color: #e63946; }
-    .status span.p2 { color: #f1faee; }
+    .status span.p1 { color: #d9a05b; }
+    .status span.p2 { color: #f4ebd0; }
 
     .btn {
-      background: #457b9d;
+      background: #8b5a2b;
       color: #fff;
-      border: none;
+      border: 1px solid #a8733e;
       padding: 12px 20px;
       border-radius: 8px;
       font-weight: 600;
       font-size: 1rem;
       cursor: pointer;
     }
-    .btn:disabled {
-      background: #555;
-      opacity: 0.4;
-    }
+    .btn:disabled { background: #3d2b1f; border-color: #2b1d14; opacity: 0.4; }
 
-    /* Full Viewport Responsive Board */
-    .board-container {
+    /* Wooden Board Frame */
+    .board-wrapper {
       width: 100vw;
       flex: 1;
-      max-width: 600px;
-      background: #2b1d14;
-      border-left: 6px solid #1c130d;
-      border-right: 6px solid #1c130d;
+      max-width: 640px;
+      background: #4a2e18;
+      border: 10px solid #2d1a0e;
+      box-shadow: inset 0 0 25px rgba(0,0,0,0.9);
       display: grid;
-      grid-template-rows: 1fr auto 1fr;
+      grid-template-columns: 36px 1fr 36px;
       position: relative;
-      box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
       container-type: size;
+    }
+
+    .off-tray {
+      background: #23140a;
+      border-left: 2px solid #140b05;
+      border-right: 2px solid #140b05;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 2px;
+      cursor: pointer;
+    }
+    .off-tray.valid-move {
+      background: rgba(46, 196, 182, 0.25);
+      border: 2px dashed #2ec4b6;
+    }
+    .off-slot {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      width: 100%;
+      align-items: center;
+    }
+
+    .board-container {
+      display: grid;
+      grid-template-rows: 1fr 36px 1fr;
+      background: #8b5a2b;
+      position: relative;
     }
 
     .half-board {
       display: grid;
-      grid-template-columns: repeat(6, 1fr) 36px repeat(6, 1fr);
+      grid-template-columns: repeat(6, 1fr) 30px repeat(6, 1fr);
       height: 100%;
       position: relative;
     }
 
     .bar {
-      background: #1c130d;
+      background: #3d2414;
       grid-row: 2;
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr) 30px repeat(6, 1fr);
       align-items: center;
-      justify-content: center;
-      padding: 6px 0;
-      gap: 8px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #ccc;
+      border-top: 2px solid #24150e;
+      border-bottom: 2px solid #24150e;
       cursor: pointer;
     }
 
-    .bar-slot {
+    .bar-center {
+      grid-column: 7;
       display: flex;
       flex-direction: row;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       gap: 4px;
-      min-height: 32px;
       width: 100%;
-      padding: 2px 4px;
-      border-radius: 4px;
-    }
-    .bar-slot.selected {
-      background: rgba(230, 57, 70, 0.35);
-      outline: 2px solid #e63946;
+      height: 100%;
     }
 
     .point {
@@ -224,17 +216,16 @@
       overflow: hidden;
     }
 
-    /* SVG Triangles via CSS mask for fluid stretching */
     .point::before {
       content: "";
       position: absolute;
       width: 100%;
-      height: 88%;
-      background-color: #3d2b1f;
+      height: 90%;
+      background-color: #f4ebd0; /* Cream */
       z-index: 1;
     }
     .point.alt::before {
-      background-color: #6b4d38;
+      background-color: #24150e; /* Dark Brown */
     }
 
     .top-half .point::before {
@@ -247,7 +238,6 @@
       clip-path: polygon(0 100%, 100% 100%, 50% 0);
     }
 
-    /* Container Query Driven Checkers */
     .checkers-container {
       position: absolute;
       width: 100%;
@@ -258,29 +248,43 @@
       z-index: 2;
       pointer-events: none;
     }
-    .top-half .checkers-container { justify-content: flex-start; padding-top: 4px; }
-    .bottom-half .checkers-container { justify-content: flex-end; padding-bottom: 4px; }
+    .top-half .checkers-container { justify-content: flex-start; padding-top: 2px; }
+    .bottom-half .checkers-container { justify-content: flex-end; padding-bottom: 2px; }
 
     .checker {
-      width: clamp(24px, 6.5cqw, 42px);
-      height: clamp(24px, 6.5cqw, 42px);
+      width: clamp(22px, 6.2cqw, 38px);
+      height: clamp(22px, 6.2cqw, 38px);
       border-radius: 50%;
-      margin-top: calc(-1 * clamp(4px, 1.2cqw, 10px));
-      margin-bottom: calc(-1 * clamp(4px, 1.2cqw, 10px));
-      box-shadow: 0 2px 6px rgba(0,0,0,0.6);
-      border: 2px solid #fff;
+      margin-top: calc(-1 * clamp(4px, 1.2cqw, 8px));
+      margin-bottom: calc(-1 * clamp(4px, 1.2cqw, 8px));
+      box-shadow: 0 2px 5px rgba(0,0,0,0.7);
       flex-shrink: 0;
     }
-    .checker.p1 { background: #e63946; border-color: #ff8fa3; }
-    .checker.p2 { background: #f1faee; border-color: #a8dadc; }
-    
-    .point.selected::after {
+    .checker.p1 {
+      background: radial-gradient(circle at 30% 30%, #6a4023, #24150e);
+      border: 1px solid #8b5a2b;
+    }
+    .checker.p2 {
+      background: radial-gradient(circle at 30% 30%, #ffffff, #dcd3bd);
+      border: 1px solid #a89f8d;
+    }
+
+    .checker-mini {
+      width: 26px;
+      height: 10px;
+      border-radius: 3px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    }
+    .checker-mini.p1 { background: #24150e; border: 1px solid #6a4023; }
+    .checker-mini.p2 { background: #f4ebd0; border: 1px solid #a89f8d; }
+
+    .point.selected::after, .bar-center.selected::after {
       content: "";
       position: absolute;
       inset: 0;
-      background: rgba(230, 57, 70, 0.35);
+      background: rgba(217, 160, 91, 0.4);
       z-index: 3;
-      border: 2px solid #e63946;
+      border: 2px solid #d9a05b;
     }
     .point.valid-move::after {
       content: "";
@@ -291,43 +295,44 @@
       border: 2px dashed #2ec4b6;
     }
 
-    .dice-area {
-      display: flex;
-      gap: 8px;
-    }
+    .dice-area { display: flex; gap: 8px; }
     .die {
       width: 34px;
       height: 34px;
-      background: #fff;
-      color: #111;
+      background: #f4ebd0;
+      color: #24150e;
       border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
       font-size: 1.1rem;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
     }
   </style>
 </head>
 <body>
 
-  <!-- Room Setup Overlay -->
   <div id="lobby-modal">
     <div class="lobby-card">
       <h2>Join Backgammon Room</h2>
-      <p style="font-size: 0.9rem; color: #aaa;">Enter your room code and select your role to start playing.</p>
-      
+      <p style="font-size: 0.9rem; color: #aaa;">Enter room code and choose your pieces.</p>
       <input type="text" id="room-id" class="input-field" placeholder="Room Code" value="jnobby" />
-      
       <div style="display: flex; gap: 10px;">
-        <button class="btn" style="flex: 1;" onclick="joinRoom('p1')">Play as Red (P1)</button>
-        <button class="btn" style="flex: 1; background: #e63946;" onclick="joinRoom('p2')">Play as White (P2)</button>
+        <button class="btn" style="flex: 1;" onclick="joinRoom('p1')">Brown (P1)</button>
+        <button class="btn" style="flex: 1; background: #f4ebd0; color: #24150e;" onclick="joinRoom('p2')">Ivory (P2)</button>
       </div>
     </div>
   </div>
 
-  <!-- Animated Dice Rolling Modal Overlay -->
+  <div id="win-modal">
+    <div class="lobby-card">
+      <h2 id="win-title">Victory!</h2>
+      <p id="win-desc" style="font-size: 1rem; color: #ccc; margin-top: 8px;"></p>
+      <button class="btn" style="margin-top: 16px;" onclick="resetGame()">Play Again</button>
+    </div>
+  </div>
+
   <div id="dice-overlay">
     <div class="dice-roll-stage">
       <div class="anim-die rolling" id="anim-die-1">?</div>
@@ -350,15 +355,24 @@
     </div>
   </header>
 
-  <main class="board-container">
-    <div class="half-board top-half" id="top-board"></div>
-
-    <div class="bar" id="central-bar" onclick="handleBarClick()">
-      <div class="bar-slot" id="bar-slot-p1"></div>
-      <div class="bar-slot" id="bar-slot-p2"></div>
+  <main class="board-wrapper">
+    <div class="off-tray" id="off-tray-left" onclick="handleOffClick()">
+      <div class="off-slot" id="off-p2"></div>
     </div>
 
-    <div class="half-board bottom-half" id="bottom-board"></div>
+    <div class="board-container">
+      <div class="half-board top-half" id="top-board"></div>
+
+      <div class="bar" onclick="handleBarClick()">
+        <div class="bar-center" id="bar-center"></div>
+      </div>
+
+      <div class="half-board bottom-half" id="bottom-board"></div>
+    </div>
+
+    <div class="off-tray" id="off-tray-right" onclick="handleOffClick()">
+      <div class="off-slot" id="off-p1"></div>
+    </div>
   </main>
 
   <footer>
@@ -382,6 +396,7 @@
          5,  0,  0,  0,  0, -2
       ],
       bar: { p1: 0, p2: 0 },
+      off: { p1: 0, p2: 0 },
       turn: 'p1',
       dice: [],
       selectedPoint: null
@@ -390,22 +405,16 @@
     document.addEventListener("DOMContentLoaded", () => {
       const urlParams = new URLSearchParams(window.location.search);
       const roomParam = urlParams.get('room');
-      if (roomParam) {
-        document.getElementById('room-id').value = roomParam;
-      }
+      if (roomParam) document.getElementById('room-id').value = roomParam;
     });
 
     function joinRoom(role) {
       myRole = role;
       const roomId = document.getElementById('room-id').value.trim() || 'jnobby';
-
       supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
       roomChannel = supabaseClient.channel(`game_${roomId}`, {
-        config: { 
-          broadcast: { self: false },
-          presence: { key: myRole }
-        }
+        config: { broadcast: { self: false }, presence: { key: myRole } }
       });
 
       roomChannel
@@ -413,13 +422,12 @@
           gameState = payload;
           renderCheckers();
           updateActionControls();
+          checkWinCondition();
         })
         .on('broadcast', { event: 'TRIGGER_DICE_ANIM' }, ({ payload }) => {
           playDiceAnimation(payload.d1, payload.d2, false);
         })
-        .on('presence', { event: 'sync' }, () => {
-          updatePresenceStatus();
-        })
+        .on('presence', { event: 'sync' }, () => updatePresenceStatus())
         .subscribe(async (status) => {
           if (status === 'SUBSCRIBED') {
             await roomChannel.track({ role: myRole, onlineAt: new Date().toISOString() });
@@ -433,7 +441,6 @@
     function updatePresenceStatus() {
       const state = roomChannel.presenceState();
       const connectedRoles = Object.keys(state);
-      
       const dot = document.getElementById('presence-dot');
       const text = document.getElementById('presence-text');
 
@@ -448,11 +455,7 @@
 
     function broadcastState() {
       if (!roomChannel) return;
-      roomChannel.send({
-        type: 'broadcast',
-        event: 'STATE_UPDATE',
-        payload: gameState
-      });
+      roomChannel.send({ type: 'broadcast', event: 'STATE_UPDATE', payload: gameState });
     }
 
     function initBoard() {
@@ -464,13 +467,19 @@
       for (let i = 12; i < 24; i++) {
         const pointEl = createPointElement(i);
         topBoard.appendChild(pointEl);
-        if (i === 17) topBoard.appendChild(document.createElement('div'));
+        if (i === 17) {
+          const spacer = document.createElement('div');
+          topBoard.appendChild(spacer);
+        }
       }
 
       for (let i = 11; i >= 0; i--) {
         const pointEl = createPointElement(i);
         bottomBoard.appendChild(pointEl);
-        if (i === 5) bottomBoard.appendChild(document.createElement('div'));
+        if (i === 5) {
+          const spacer = document.createElement('div');
+          bottomBoard.appendChild(spacer);
+        }
       }
 
       renderCheckers();
@@ -484,11 +493,27 @@
       return point;
     }
 
+    function canBearOff(player) {
+      const isP1 = player === 'p1';
+      if (isP1 && gameState.bar.p1 > 0) return false;
+      if (!isP1 && gameState.bar.p2 > 0) return false;
+
+      const homeStart = isP1 ? 18 : 0;
+      const homeEnd = isP1 ? 23 : 5;
+
+      for (let i = 0; i < 24; i++) {
+        if (i < homeStart || i > homeEnd) {
+          if (isP1 && gameState.board[i] > 0) return false;
+          if (!isP1 && gameState.board[i] < 0) return false;
+        }
+      }
+      return true;
+    }
+
     function getValidDestinations(fromIndex) {
       if (gameState.dice.length === 0) return [];
       const isP1 = gameState.turn === 'p1';
-      
-      // If player has checkers on bar, they MUST enter them first
+
       if (isP1 && gameState.bar.p1 > 0 && fromIndex !== 'bar') return [];
       if (!isP1 && gameState.bar.p2 > 0 && fromIndex !== 'bar') return [];
 
@@ -498,7 +523,6 @@
       uniqueDice.forEach(die => {
         let targetIndex;
         if (fromIndex === 'bar') {
-          // P1 enters onto points 0..5 (die - 1). P2 enters onto points 23..18 (24 - die).
           targetIndex = isP1 ? die - 1 : 24 - die;
         } else {
           targetIndex = isP1 ? fromIndex + die : fromIndex - die;
@@ -507,7 +531,27 @@
         if (targetIndex >= 0 && targetIndex < 24) {
           const targetVal = gameState.board[targetIndex];
           if ((isP1 && targetVal >= -1) || (!isP1 && targetVal <= 1)) {
-            validDestinations.push({ targetIndex, usedDie: die });
+            validDestinations.push({ targetIndex, usedDie: die, isOff: false });
+          }
+        } 
+        else if (canBearOff(gameState.turn) && fromIndex !== 'bar') {
+          const exactDie = isP1 ? (24 - fromIndex) : (fromIndex + 1);
+          if (die === exactDie) {
+            validDestinations.push({ targetIndex: 'off', usedDie: die, isOff: true });
+          } else if (die > exactDie) {
+            let hasFurther = false;
+            if (isP1) {
+              for (let p = 18; p < fromIndex; p++) {
+                if (gameState.board[p] > 0) hasFurther = true;
+              }
+            } else {
+              for (let p = 5; p > fromIndex; p--) {
+                if (gameState.board[p] < 0) hasFurther = true;
+              }
+            }
+            if (!hasFurther) {
+              validDestinations.push({ targetIndex: 'off', usedDie: die, isOff: true });
+            }
           }
         }
       });
@@ -522,9 +566,17 @@
         if (existing) existing.remove();
       });
 
+      document.getElementById('off-tray-left').classList.remove('valid-move');
+      document.getElementById('off-tray-right').classList.remove('valid-move');
+
       let validDestinations = [];
       if (gameState.selectedPoint !== null) {
         validDestinations = getValidDestinations(gameState.selectedPoint);
+      }
+
+      if (validDestinations.some(d => d.isOff)) {
+        if (gameState.turn === 'p1') document.getElementById('off-tray-right').classList.add('valid-move');
+        else document.getElementById('off-tray-left').classList.add('valid-move');
       }
 
       gameState.board.forEach((count, index) => {
@@ -538,7 +590,6 @@
 
         const container = document.createElement('div');
         container.className = 'checkers-container';
-
         const isP1 = count > 0;
         const numCheckers = Math.abs(count);
 
@@ -550,34 +601,42 @@
         pointEl.appendChild(container);
       });
 
-      // Render Bar Checkers Visually
-      const barSlotP1 = document.getElementById('bar-slot-p1');
-      const barSlotP2 = document.getElementById('bar-slot-p2');
-      barSlotP1.innerHTML = '';
-      barSlotP2.innerHTML = '';
-      barSlotP1.classList.remove('selected');
-      barSlotP2.classList.remove('selected');
+      const barCenter = document.getElementById('bar-center');
+      barCenter.innerHTML = '';
+      barCenter.classList.remove('selected');
 
       if (gameState.bar.p1 > 0) {
         for (let i = 0; i < gameState.bar.p1; i++) {
           const chk = document.createElement('div');
           chk.className = 'checker p1';
-          barSlotP1.appendChild(chk);
-        }
-        if (gameState.selectedPoint === 'bar' && gameState.turn === 'p1') {
-          barSlotP1.classList.add('selected');
+          barCenter.appendChild(chk);
         }
       }
-
       if (gameState.bar.p2 > 0) {
         for (let i = 0; i < gameState.bar.p2; i++) {
           const chk = document.createElement('div');
           chk.className = 'checker p2';
-          barSlotP2.appendChild(chk);
+          barCenter.appendChild(chk);
         }
-        if (gameState.selectedPoint === 'bar' && gameState.turn === 'p2') {
-          barSlotP2.classList.add('selected');
-        }
+      }
+      if (gameState.selectedPoint === 'bar') {
+        barCenter.classList.add('selected');
+      }
+
+      const offP1 = document.getElementById('off-p1');
+      const offP2 = document.getElementById('off-p2');
+      offP1.innerHTML = '';
+      offP2.innerHTML = '';
+
+      for (let i = 0; i < gameState.off.p1; i++) {
+        const chk = document.createElement('div');
+        chk.className = 'checker-mini p1';
+        offP1.appendChild(chk);
+      }
+      for (let i = 0; i < gameState.off.p2; i++) {
+        const chk = document.createElement('div');
+        chk.className = 'checker-mini p2';
+        offP2.appendChild(chk);
       }
 
       const diceContainer = document.getElementById('dice-container');
@@ -588,9 +647,11 @@
       }
 
       const isMyTurn = gameState.turn === myRole;
-      const turnName = gameState.turn === 'p1' ? 'Red' : 'White';
+      const myColorName = myRole === 'p1' ? 'Brown' : 'Ivory';
+      const turnName = gameState.turn === 'p1' ? 'Brown' : 'Ivory';
+
       document.getElementById('status-text').innerHTML = 
-        `You: <b>${myRole.toUpperCase()}</b> | Turn: <span class="${gameState.turn}">${turnName}</span> ${isMyTurn ? '(Your Turn)' : ''}`;
+        `You: <b>${myColorName}</b> | Turn: <span class="${gameState.turn}">${turnName}</span> ${isMyTurn ? '(Your Turn)' : ''}`;
     }
 
     function updateActionControls() {
@@ -601,7 +662,6 @@
 
     function rollDice() {
       if (gameState.turn !== myRole) return;
-
       const d1 = Math.floor(Math.random() * 6) + 1;
       const d2 = Math.floor(Math.random() * 6) + 1;
 
@@ -643,30 +703,25 @@
 
           setTimeout(() => {
             overlay.style.display = 'none';
-
             if (isInitiator) {
               gameState.dice = (d1 === d2) ? [d1, d1, d1, d1] : [d1, d2];
-              
-              // Automatically select bar if active player has checkers on it
               const isP1 = gameState.turn === 'p1';
               if ((isP1 && gameState.bar.p1 > 0) || (!isP1 && gameState.bar.p2 > 0)) {
                 gameState.selectedPoint = 'bar';
               } else {
                 gameState.selectedPoint = null;
               }
-
               renderCheckers();
               updateActionControls();
               broadcastState();
             }
-          }, 1500);
+          }, 1200);
         }
-      }, 100);
+      }, 90);
     }
 
     function handleBarClick() {
       if (gameState.turn !== myRole || gameState.dice.length === 0) return;
-
       const isP1 = gameState.turn === 'p1';
       const hasBarCheckers = isP1 ? gameState.bar.p1 > 0 : gameState.bar.p2 > 0;
 
@@ -676,13 +731,22 @@
       }
     }
 
+    function handleOffClick() {
+      if (gameState.turn !== myRole || gameState.selectedPoint === null) return;
+      const moves = getValidDestinations(gameState.selectedPoint);
+      const offMove = moves.find(m => m.isOff);
+
+      if (offMove) {
+        executeMove(gameState.selectedPoint, 'off', offMove.usedDie);
+      }
+    }
+
     function handlePointClick(index) {
       if (gameState.turn !== myRole || gameState.dice.length === 0) return;
 
       const isP1 = gameState.turn === 'p1';
       const hasBarCheckers = isP1 ? gameState.bar.p1 > 0 : gameState.bar.p2 > 0;
 
-      // Force bar selection if player has checkers on the bar
       if (hasBarCheckers && gameState.selectedPoint !== 'bar') {
         gameState.selectedPoint = 'bar';
       }
@@ -700,36 +764,7 @@
         const match = moves.find(m => m.targetIndex === index);
 
         if (match) {
-          const fromIndex = gameState.selectedPoint;
-          const targetVal = gameState.board[index];
-
-          // Hit opponent blot
-          if (isP1 && targetVal === -1) {
-            gameState.board[index] = 0;
-            gameState.bar.p2++;
-          } else if (!isP1 && targetVal === 1) {
-            gameState.board[index] = 0;
-            gameState.bar.p1++;
-          }
-
-          // Move checker off bar or off point
-          if (fromIndex === 'bar') {
-            if (isP1) gameState.bar.p1--;
-            else gameState.bar.p2--;
-          } else {
-            gameState.board[fromIndex] += (isP1 ? -1 : 1);
-          }
-          gameState.board[index] += (isP1 ? 1 : -1);
-
-          // Consume used die
-          const dieIndex = gameState.dice.indexOf(match.usedDie);
-          if (dieIndex > -1) gameState.dice.splice(dieIndex, 1);
-
-          // If still have checkers on bar, keep bar selected; otherwise clear selection
-          const stillHasBar = isP1 ? gameState.bar.p1 > 0 : gameState.bar.p2 > 0;
-          gameState.selectedPoint = stillHasBar ? 'bar' : null;
-
-          broadcastState();
+          executeMove(gameState.selectedPoint, index, match.usedDie);
         } else if (isCurrentPlayerPoint && !hasBarCheckers) {
           gameState.selectedPoint = index;
         } else if (!hasBarCheckers) {
@@ -740,9 +775,78 @@
       renderCheckers();
     }
 
+    function executeMove(from, to, usedDie) {
+      const isP1 = gameState.turn === 'p1';
+
+      if (to === 'off') {
+        gameState.board[from] += (isP1 ? -1 : 1);
+        if (isP1) gameState.off.p1++;
+        else gameState.off.p2++;
+      } else {
+        const targetVal = gameState.board[to];
+
+        if (isP1 && targetVal === -1) {
+          gameState.board[to] = 0;
+          gameState.bar.p2++;
+        } else if (!isP1 && targetVal === 1) {
+          gameState.board[to] = 0;
+          gameState.bar.p1++;
+        }
+
+        if (from === 'bar') {
+          if (isP1) gameState.bar.p1--;
+          else gameState.bar.p2--;
+        } else {
+          gameState.board[from] += (isP1 ? -1 : 1);
+        }
+        gameState.board[to] += (isP1 ? 1 : -1);
+      }
+
+      const dieIndex = gameState.dice.indexOf(usedDie);
+      if (dieIndex > -1) gameState.dice.splice(dieIndex, 1);
+
+      const stillHasBar = isP1 ? gameState.bar.p1 > 0 : gameState.bar.p2 > 0;
+      gameState.selectedPoint = stillHasBar ? 'bar' : null;
+
+      renderCheckers();
+      broadcastState();
+      checkWinCondition();
+    }
+
+    function checkWinCondition() {
+      let winner = null;
+      if (gameState.off.p1 >= 15) winner = 'Brown (P1)';
+      if (gameState.off.p2 >= 15) winner = 'Ivory (P2)';
+
+      if (winner) {
+        document.getElementById('win-title').innerText = `${winner} Wins!`;
+        document.getElementById('win-desc').innerText = `All 15 checkers have been borne off the board.`;
+        document.getElementById('win-modal').style.display = 'flex';
+      }
+    }
+
+    function resetGame() {
+      gameState = {
+        board: [
+           2,  0,  0,  0,  0, -5,
+           0, -3,  0,  0,  0,  5,
+          -5,  0,  0,  0,  3,  0,
+           5,  0,  0,  0,  0, -2
+        ],
+        bar: { p1: 0, p2: 0 },
+        off: { p1: 0, p2: 0 },
+        turn: 'p1',
+        dice: [],
+        selectedPoint: null
+      };
+      document.getElementById('win-modal').style.display = 'none';
+      renderCheckers();
+      updateActionControls();
+      broadcastState();
+    }
+
     function switchTurn() {
       if (gameState.turn !== myRole) return;
-
       gameState.turn = gameState.turn === 'p1' ? 'p2' : 'p1';
       gameState.dice = [];
       gameState.selectedPoint = null;
